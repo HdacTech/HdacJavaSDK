@@ -138,16 +138,19 @@ public class HdacTransaction{
     		mTxBuilder.getTransaction().addSignedInput(outPoint, utxo.getScript(), sign, Transaction.SigHash.ALL, true);
     	}
     	
-	}
+    }
 	
     /**
      * @brief op return output Create and add to transaction
      * @param data op return data
      */
-	public void addOpReturnOutput(String data) {
-		if(data!=null&&!data.isEmpty()) 
-			mTxBuilder.getTransaction().addOutput(Transaction.MIN_NONDUST_OUTPUT, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data.getBytes()).build());
+     public void addOpReturnOutput(String data) {
+	if(data!=null&&!data.isEmpty()) {
+		long data_satoshi = data.getBytes().length * 1000;
+		Coin fee = Coin.valueOf(data_satoshi);
+		mTxBuilder.getTransaction().addOutput(fee, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data.getBytes()).build());
 	}
+     }
 	
 	/**
 	 * @brief hex data of raw transaction
