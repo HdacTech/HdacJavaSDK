@@ -140,17 +140,35 @@ public class HdacTransaction{
     	
     }
 	
-    /**
-     * @brief op return output Create and add to transaction
-     * @param data op return data
-     */
-     public void addOpReturnOutput(String data) {
-	if(data!=null&&!data.isEmpty()) {
-		long data_satoshi = data.getBytes().length * 1000;
-		Coin fee = Coin.valueOf(data_satoshi);
-		mTxBuilder.getTransaction().addOutput(fee, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data.getBytes()).build());
+        /**
+         * @brief op return output Create and add to transaction
+         * @param data op return string data
+         * @param encode encoding format 
+         */
+	public void addOpReturnOutput(String data, String encode) {
+		if(data!=null&&!data.isEmpty()) {
+			try {
+				long data_satoshi = data.getBytes().length * 1000;
+				Coin fee = Coin.valueOf(data_satoshi);			
+				mTxBuilder.getTransaction().addOutput(fee, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data.getBytes(encode)).build());
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
-     }
+	
+	/**
+         * @brief op return output Create and add to transaction
+         * @param data op return byte data
+         */
+	public void addOpReturnOutput(byte[] data) {
+		if(data!=null&&data.length>0) {
+			long data_satoshi = data.length * 1000;
+			Coin fee = Coin.valueOf(data_satoshi);
+			mTxBuilder.getTransaction().addOutput(fee, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data).build());
+		}
+	}
 	
 	/**
 	 * @brief hex data of raw transaction
