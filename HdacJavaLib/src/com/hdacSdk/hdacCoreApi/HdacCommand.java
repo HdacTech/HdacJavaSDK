@@ -626,15 +626,17 @@ public class HdacCommand {
      * @param custom_field
      * @throws CommandException
      */
-    public void issue (@Nonnull String address, @Nonnull String name, @Nullable String qty,
+    public void issue (@Nonnull String address, @Nonnull String name, @Nonnull String qty,
     		@Nullable String units, @Nullable String native_amount, @Nullable JSONObject custom_field) throws CommandException {
 	//address name|params qty (units=1) (native-amount=min-per-output) ({"custom-field-1":"x",...})//"issue",
-		if(hdacRpcClient==null) throw new CommandException("hdacRpcClient", 4);
-		if(address==null||address.isEmpty()) throw new CommandException("address", 0);
-		if(name==null||name.isEmpty()) throw new CommandException("name", 0);		
-				
-		hdacRpcClient.sendCommand(CommandUtils.ISSUE, address, name, qty, units, native_amount, custom_field.toString());
-	}
+    	String customField = null;
+	if(hdacRpcClient==null) throw new CommandException("hdacRpcClient", 4);
+	if(address==null||address.isEmpty()) throw new CommandException("address", 0);
+	if(name==null||name.isEmpty()) throw new CommandException("name", 0);		
+	if(custom_field!=null) customField = custom_field.toString();
+			
+	hdacRpcClient.sendCommand(CommandUtils.ISSUE, address, name, qty, units, native_amount, customField);
+    }
 	
     /**
      * @brief block chain api issuefrom
@@ -647,16 +649,17 @@ public class HdacCommand {
      * @param custom_field
      * @throws CommandException
      */
-    public void issuefrom (@Nonnull String from_address, @Nonnull String to_address, @Nonnull String name, @Nullable String qty,
+    public void issuefrom (@Nonnull String from_address, @Nonnull String to_address, @Nonnull String name, @Nonnull String qty,
     		@Nullable String units, @Nullable String native_amount, @Nullable JSONObject custom_field) throws CommandException {
 	//from-address to-address name|params qty (units=1) (native-amount=min-per-output) ({"custom-field-1":"x",...})//"issuefrom",
-		if(hdacRpcClient==null) throw new CommandException("hdacRpcClient", 4);
-		if(from_address==null||from_address.isEmpty()) throw new CommandException("from_address", 0);
-		if(to_address==null||to_address.isEmpty()) throw new CommandException("to_address", 0);
-		if(name==null||name.isEmpty()) throw new CommandException("name", 0);
-				
-		hdacRpcClient.sendCommand(CommandUtils.ISSUE_FROM, from_address, to_address, name, qty, units, native_amount, custom_field.toString());
-	}
+	if(hdacRpcClient==null) throw new CommandException("hdacRpcClient", 4);
+	if(from_address==null||from_address.isEmpty()) throw new CommandException("from_address", 0);
+	if(to_address==null||to_address.isEmpty()) throw new CommandException("to_address", 0);
+	if(name==null||name.isEmpty()) throw new CommandException("name", 0);
+	if(qty==null||qty.isEmpty()) throw new CommandException("qty", 0);	
+		
+	hdacRpcClient.sendCommand(CommandUtils.ISSUE_FROM, from_address, to_address, name, qty, units, native_amount, custom_field!=null?custom_field.toString():null);
+    }
 	
     /**
      * @brief block chain api issuemore
@@ -712,13 +715,13 @@ public class HdacCommand {
 		hdacRpcClient.sendCommand(CommandUtils.LIST_ASSETS, assets, verbose, count, start);
 	}
 	
-//    public void getassetbalances (
-//    		@Nullable String account, @Nullable String minconf, @Nullable String includeWatchOnly, @Nullable String includeLocked) throws CommandException {
-//	//(account=&quot;&quot;) (minconf=1) (includeWatchOnly=false) (includeLocked=false)//"getassetbalances",
-//		if(client==null) throw new CommandException("hash|Height", 0);
-//		
-//		client.sendCommand(TransactionDef.GET_ASSET_BALANCES, account, minconf, includeWatchOnly, includeLocked);
-//	}
+    public void getassetbalances (
+    		@Nullable String account, @Nullable String minconf, @Nullable String includeWatchOnly, @Nullable String includeLocked) throws CommandException {
+        //(account=&quot;&quot;) (minconf=1) (includeWatchOnly=false) (includeLocked=false)//"getassetbalances",
+	if(hdacRpcClient==null) throw new CommandException("hdacRpcClient", 0);
+		
+	hdacRpcClient.sendCommand(CommandUtils.GET_ASSET_BALANCES, account, minconf, includeWatchOnly, includeLocked);
+    }
 	
     /**
      * @brief block chain api getmultibalances
@@ -968,7 +971,7 @@ public class HdacCommand {
 		if(name==null||name.isEmpty()) throw new CommandException("name", 0);
 		if(open==null||open.isEmpty()) throw new CommandException("open", 0);
 		
-		hdacRpcClient.sendCommand(CommandUtils.CREATE_T_STREAM, type, name, open, custom_field_1.toString());
+		hdacRpcClient.sendCommand(CommandUtils.CREATE_T_STREAM, type, name, open, custom_field_1!=null?custom_field_1.toString():null);
 	}
 	
 	/**
@@ -988,7 +991,7 @@ public class HdacCommand {
 		if(name==null||name.isEmpty()) throw new CommandException("name", 0);
 		if(open==null||open.isEmpty()) throw new CommandException("open", 0);
 		
-		hdacRpcClient.sendCommand(CommandUtils.CREATE_FROM_T_STREAM, from_address, type, name, open, custom_field_1.toString());
+		hdacRpcClient.sendCommand(CommandUtils.CREATE_FROM_T_STREAM, from_address, type, name, open, custom_field_1!=null?custom_field_1.toString():null);
 	}
 	
 	/**
