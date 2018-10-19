@@ -23,6 +23,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
+
+import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.ECKey;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,6 +38,8 @@ import com.hdacSdk.hdacCoreApi.HdacException;
 import com.hdacSdk.hdacCoreApi.HdacRpcClient;
 import com.hdacSdk.hdacCoreApi.RpcHandler;
 import com.hdacSdk.hdacWallet.HdacCoreAddrParams;
+import com.hdacSdk.hdacWallet.HdacMultiSigTransaction;
+import com.hdacSdk.hdacWallet.HdacNetworkParams;
 import com.hdacSdk.hdacWallet.HdacTransaction;
 import com.hdacSdk.hdacWallet.HdacWallet;
 import com.hdacSdk.hdacWallet.HdacWalletManager;
@@ -43,12 +47,12 @@ import com.hdacSdk.hdacWallet.HdacWalletUtils;
 import com.hdacSdk.hdacWallet.HdacWalletUtils.NnmberOfWords;
 
 public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler {
-
+	
 	private static final String rpcIp = "http://172.0.0.1";
-	private static final String rpcPort = "8822";
-	private static final String rpcUser = "rpcUser";
-	private static final String rpcPassword = "rpcPassword";
+	private static final String rpcPort = "28822";
 	private static final String chainName = "hdac";
+	private static final String rpcUser = "hdac";
+	private static final String rpcPassword = "hdac1234";
 	
 	private HdacWalletManager hdacWalletMgr;
 	private HdacApiManager hdacMCMgr;
@@ -132,6 +136,15 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
         //<
         
 	}
+	
+	private String multiSigAddr = null;
+	
+	HdacWallet hdacWallet1 = null;
+	HdacWallet hdacWallet2 = null;
+	HdacWallet hdacWallet3 = null;
+	
+	HdacWallet toHdacWallet = null;
+	HdacMultiSigTransaction hdacMultiSigTx = null;
 
 	@Override
 	public void actionPerformed(ActionEvent arg) {
@@ -143,9 +156,10 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
             	List<String>seed_words = HdacWalletUtils.getRandomSeedWords(NnmberOfWords.MNEMONIC_12_WORDS);
             	System.out.print("create_wallet seedWords = " + seed_words.toString() + "\n");
             	txtSeedWords.setText(seed_words.toString().replace("[", "").replace("]", "").replace(",", ""));
+            	
             	break;
             case "create_wallet":
-            	HdacCoreAddrParams params = new HdacCoreAddrParams(true);
+            	HdacCoreAddrParams params = new HdacCoreAddrParams(false);
             	
             	if(seedWords==null) seedWords = new ArrayList<String>();
             	seedWords.clear();
@@ -155,7 +169,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
         		}
         		//create wallet
         		hdacWallet = HdacWalletManager.generateNewWallet(seedWords, "", params);
-            	
+        		
             	System.out.print("create_wallet isValidWallet = " + hdacWallet.isValidWallet() + "\n");
             	if(hdacWallet.isValidWallet()) txtAddress.setText("Address : " + hdacWallet.getHdacAddress());
             	else {
@@ -168,6 +182,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
 				
 				try {
 					//get balance
+					System.out.print("get balance " + "\n");
 					hdacCommand.getaddressbalances(hdacWallet.getHdacAddress(), "1", "false");					
 				} catch (CommandException e) {
 					// TODO Auto-generated catch block
@@ -179,7 +194,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
             	//send raw transaction
             	System.out.print("send start" + "\n");  
             	if(hdacWallet!=null) {
-            		//새로운 rpc client 생성    
+            		//�깉濡쒖슫 rpc client �깮�꽦    
             		HdacRpcClient rpc_client = createHdacRpcClient(null);   		
             		try {
             			HdacCommand hdac_command = new HdacCommand(rpc_client);
@@ -210,9 +225,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
 											//create raw transaction
 											String raw_tx = getRawTransaction(hdacWallet, data);												
 											//send raw transaction
-											if(raw_tx!=null) hdacCommand.sendrawtransaction(raw_tx);
-											//balance & tx list update after sending
-											refresh();
+											if(raw_tx!=null) hdacCommand.sendrawtransaction(raw_tx);											
 										} catch (CommandException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
@@ -243,26 +256,86 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
         }
 		
 	}
+	
+	private String sendMutiSigTxSample() {
+		HdacWalletManager hmgr = HdacWalletManager.getInstance();
+    	
+    	hmgr.addNewWallet(HdacWalletUtils.getRandomSeedWords(NnmberOfWords.MNEMONIC_12_WORDS),
+    			"", new HdacCoreAddrParams(false));
+    	hmgr.addNewWallet(HdacWalletUtils.getRandomSeedWords(NnmberOfWords.MNEMONIC_12_WORDS),
+    			"", new HdacCoreAddrParams(false));
+    	hmgr.addNewWallet(HdacWalletUtils.getRandomSeedWords(NnmberOfWords.MNEMONIC_12_WORDS),
+    			"", new HdacCoreAddrParams(false));
+    	
+    	toHdacWallet = HdacWalletManager.generateNewWallet(HdacWalletUtils.getRandomSeedWords(NnmberOfWords.MNEMONIC_12_WORDS),
+    			"", new HdacCoreAddrParams(false));
+    	
+    	
+    	hdacMultiSigTx = new HdacMultiSigTransaction(HdacSamplePane.rpcIp, HdacSamplePane.rpcPort,			
+				HdacSamplePane.rpcUser, HdacSamplePane.rpcPassword, HdacSamplePane.chainName);
+    	
+    	multiSigAddr = hdacMultiSigTx.createMultiSigAddress(hmgr.getWalletList().size(),
+    			hmgr.getWalletByIndex(0).getHdacPublicKey(), 
+    			hmgr.getWalletByIndex(1).getHdacPublicKey(), 
+    			hmgr.getWalletByIndex(2).getHdacPublicKey());
+    	
+    	System.out.print("createMultiSigAddress : " + multiSigAddr + "\n");
+    	
+    	hdacMultiSigTx.grantPermission(multiSigAddr);
+    	hdacMultiSigTx.sendToMultiSigAddr(multiSigAddr, 1000);
+    	
+    	JSONObject toAddrWithData = new JSONObject();
+    	toAddrWithData.put(toHdacWallet.getHdacAddress(), 10);    	
+    	System.out.print("toAddrWithData : " + toAddrWithData + "\n");
+    	
+    	JSONArray data = new JSONArray();
+    	data.put("1f9d46e951de00d1ff8110078c5a0950ef650482ee0e02757ca6efab228f9670");
+    	//           .........
+    	String rawTx = hdacMultiSigTx.createRawSendFrom(multiSigAddr, toAddrWithData, data, "sign");
+    	
+    	JSONArray utxo = hdacMultiSigTx.getListUnspent(multiSigAddr);
+    	String signed3RawTx = null;
+    	if(rawTx!=null
+    			&& utxo!=null && utxo.length()>0) {
+    		
+    		String signed1RawTx = hdacMultiSigTx.signRawTransaction(rawTx, 
+    				hmgr.getWalletByIndex(0).getHdacBase58PrivateKey(), utxo.getJSONObject(0));
+    		
+        	String signed2RawTx = hdacMultiSigTx.signRawTransaction(signed1RawTx, 
+        			hmgr.getWalletByIndex(1).getHdacBase58PrivateKey(), utxo.getJSONObject(0));
+        	
+        	signed3RawTx = hdacMultiSigTx.signRawTransaction(signed2RawTx, 
+        			hmgr.getWalletByIndex(2).getHdacBase58PrivateKey(), utxo.getJSONObject(0));
+    	}
+    	
+    	System.out.print("signed raw transaction : " + signed3RawTx + "\n");
+    	String rstTxid = hdacMultiSigTx.sendRawTrasnsaction(signed3RawTx);
+    	System.out.print("sned raw transaction : " + rstTxid + "\n");    	
+    	return rstTxid;
+	}
+	
 
 	@Override
 	public void done(int method) {
 		// TODO Auto-generated method stub
+		System.out.print("done " + method + "\n");
 		
 	}
 
 	@Override
 	public void onResponse(int method, JSONObject rst) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub	
+		System.out.print("onResponse method " + method + "\n");
 		switch(method) {
 			case CommandUtils.GET_ADDRESS_BALANCES :
 				try {
 					if(!rst.isNull("error")) {
-						System.out.print("RPC Error " + rst.get("error").toString());
+						System.out.print("RPC Error " + rst.get("error").toString() + "\n");
 						break;
 					}
 					JSONArray result = rst.getJSONArray("result");
 					JSONObject balance_info = (JSONObject) result.get(0);
-					txtBalance.setText("Balance : " + balance_info.getFloat("qty"));	
+					txtBalance.setText("Balance : " + balance_info.getString("qty"));	
 					hdacCommandSvc.listaddresstransactions(hdacWallet.getHdacAddress(), "30", "0", "false");
 				} catch (JSONException e1) {
 					// TODO Auto-generated catch block
@@ -274,9 +347,10 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
 				break;
 			case CommandUtils.LIST_UNSPENT:
 				if(!rst.isNull("error")) {
-					System.out.print("RPC Error " + rst.getString("error"));
+					System.out.print("RPC Error " + rst.getString("error") + "\n");
 					break;
 				}
+				System.out.print("LIST_UNSPENT " + rst.toString() + "\n");
 				txtBalance.setText("Balance : " + getBalance(rst));
 				try {
 					hdacCommandSvc.listaddresstransactions(hdacWallet.getHdacAddress(), "30", "0", "false");
@@ -284,7 +358,17 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				break;			
+				break;	
+				
+			case CommandUtils.SEND_RAW_TRANSACTION:
+				if(!rst.isNull("error")) {
+					System.out.print("RPC Error " + rst.getString("error") + "\n");
+					break;
+				}
+				System.out.print("SEND_RAW_TRANSACTION " + rst.toString() + "\n");
+				//balance & tx list update after sending
+				refresh();				
+				break;
 		}
 		
 		try {
@@ -324,7 +408,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
         	for(int i=0; i<utxos.length();i++) {
 				JSONObject utxo;
 				utxo = utxos.getJSONObject(i);
-				balance += utxo.getFloat("amount");										
+				balance += utxo.getLong("amount");										
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -337,7 +421,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
 		//for checking balance 
 		//>
 		long lBalance = (long) (balance * Math.pow(10, 8));
-		long send_amount = (long) (Float.parseFloat(txtSendAmount.getText()) * Math.pow(10, 8));
+		long send_amount = (long) (Long.parseLong(txtSendAmount.getText()) * Math.pow(10, 8));
 		System.out.print("input " + txtSendAmount.getText() + "\n");
 		long remain = lBalance - send_amount - fee;
 		//<
@@ -366,7 +450,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
     			    "Invalid raw transaction",
     			    JOptionPane.ERROR_MESSAGE);
 		}
-		//<
+		//<		
 		return null;
 	}
 	
@@ -384,7 +468,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
     		for(int i=0; i<utxos.length();i++) {
 				JSONObject utxo;
 				utxo = utxos.getJSONObject(i);
-				balance += utxo.getFloat("amount");										
+				balance += utxo.getLong("amount");										
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -404,8 +488,8 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
     		/*
     		 * rpcIp: node server ip (from .hdac/[chainname]/hdac.conf)
     		 * rpcPort: node server rpc port (from .hdac/[chainname]/hdac.conf)
-    		 * rpcUser: node 계정 id (from .hdac/[chainname]/hdac.conf)
-    		 * rpcPassword: node 계정 password (from .hdac/[chainname]/hdac.conf)
+    		 * rpcUser: node 怨꾩젙 id (from .hdac/[chainname]/hdac.conf)
+    		 * rpcPassword: node 怨꾩젙 password (from .hdac/[chainname]/hdac.conf)
     		 * chainName: node block chain name (from .hdac/[chainname] 
     		 */    		
 			hdacRpcClient = HdacApiManager.createRPCClient(HdacSamplePane.rpcIp, HdacSamplePane.rpcPort,			
@@ -641,7 +725,7 @@ public class HdacSamplePane extends JPanel implements ActionListener, RpcHandler
         hdpay_info.setLineWrap(true);
         hdpay_info.setEditable(false);
         hdpay_info.setFont(new Font("ArialMT", Font.PLAIN, 15));
-        hdpay_info.setText("  Hdac Technology\n  copyright © 2018 Hdac Technology AG. All Rights Reserved.");
+        hdpay_info.setText("  Hdac Technology\n  copyright 짤 2018 Hdac Technology AG. All Rights Reserved.");
         hdpay_info.setBackground(new Color(0x303344));
         hdpay_info.setForeground(Color.WHITE);
                 
