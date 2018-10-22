@@ -49,7 +49,7 @@ public class CommandUtils {
     public static final int ISSUE_MORE                                     = 35;
     public static final int ISSUE_MORE_FROM                                = 36;
     public static final int LIST_ASSETS                                    = 37;
-//    public static final int GET_ASSET_BALANCES                             = 38;
+    public static final int GET_ASSET_BALANCES                             = 38;
     public static final int GET_MULTIBALANCES                              = 39;
     public static final int GET_WALLET_TRANSACTION                         = 40;
     public static final int SEND                                           = 41;
