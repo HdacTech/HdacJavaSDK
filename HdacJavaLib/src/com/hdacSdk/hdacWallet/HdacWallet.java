@@ -295,6 +295,50 @@ public class HdacWallet {
     		checksum[cs_id] = payloadHash.get(cs_id);
     	}
     	
+    	ArrayUtils.reverse(checksum);
+    	
+    	byte[] hdacChecksum = hexToByte(hdNetParams.getAddressChecksumValue());
+    	ArrayUtils.reverse(hdacChecksum);
+    	int length = hdacChecksum.length;//Math.max(checksum.length, hdacChecksum.length);
+    	byte[] checksumBuf = new byte[length];
+    	for (int i = 0; i < length; ++i) {
+    		byte xor = (byte)(0xff & ((int)(i<checksum.length?checksum[i]:0) ^ (int)(i<hdacChecksum.length?hdacChecksum[i]:0)));
+    		checksumBuf[i] = xor;
+        }
+    	
+    	byte[] addr_Byte = new byte[payload.length + length];
+    	int addrByte_index = 0;
+    	for(;addrByte_index<payload.length;addrByte_index++) {
+    		addr_Byte[addrByte_index] = payload[addrByte_index];
+    	}
+    	
+    	ArrayUtils.reverse(checksumBuf);
+    	for(int i=0; i<length; i++) {
+    		addr_Byte[addrByte_index + i] = checksumBuf[i];
+    	}  
+    	
+    	return Base58.encode(addr_Byte);    	
+    }
+    
+    private String encodeBCBase58WIF(byte[] buf) {
+    	if(hdNetParams==null || buf==null) return null;
+    	
+    	byte[] payload = new byte[buf.length + 2];
+    	payload[0] = (byte)hdNetParams.getDumpedPrivateKeyHeader();   
+    	for(int i=0;i<buf.length;i++) {
+    		payload[i+1] = buf[i];
+    	}
+    	payload[payload.length-1] = 0x01;
+    	ByteBuffer payloadHash = ByteBuffer.wrap(sha256(sha256(payload)));
+    	
+    	payloadHash.flip(); //position 0
+    	payloadHash.limit(4);
+    	
+    	byte[] checksum = new byte[4];
+    	for(int cs_id=0;cs_id<checksum.length;cs_id++) {
+    		checksum[cs_id] = payloadHash.get(cs_id);
+    	}
+    	
     	int length = checksum.length;
     	
     	byte[] addr_Byte = new byte[payload.length + length];
@@ -325,7 +369,7 @@ public class HdacWallet {
     		//System.out.print("\n" + address + "\n" + cmpAddr);
     		if(cmpAddr.equals(address)) {    			
     			byte[] priv = hdDKeyChain.getHdacInternalKey().derive(i, false).getPrivateKey();    			
-    			DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(hdNetParams, encodeBase58WIF(priv));
+    			DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(hdNetParams, encodeBCBase58WIF(priv));
     	    	return dumpedPrivateKey.getKey(); 
     		}
     	}
@@ -334,7 +378,7 @@ public class HdacWallet {
     		String cmpAddr = getHdacAddress(false, i);
     		if(cmpAddr.equals(address)) {    			
     			byte[] priv = hdDKeyChain.getHdacExternalKey().derive(i, false).getPrivateKey();    			
-    			DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(hdNetParams, encodeBase58WIF(priv));
+    			DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(hdNetParams, encodeBCBase58WIF(priv));
     	    	return dumpedPrivateKey.getKey(); 
     		}
     	}
@@ -386,6 +430,32 @@ public class HdacWallet {
     	HdacDeterministicKey hdKey = isInternal?hdDKeyChain.getHdacInternalKey():hdDKeyChain.getHdacExternalKey();
 		byte[] pubkey = hdKey.derive(index, false).getPublicKey();
     	return convPubkeyToHdacAddress(pubkey);
+    }
+	
+    /**
+     * @brief wallet getting hdac public key of wallet
+     * @param isInternal true(internal)/false(external)
+     * @param index derive index
+     * @return pubKey
+     */
+    public String getHdacPublicKey(boolean isInternal, int index) {
+    	if(hdDKeyChain==null) return null;
+    	HdacDeterministicKey hdKey = isInternal?hdDKeyChain.getHdacInternalKey():hdDKeyChain.getHdacExternalKey();
+		byte[] pubkey = hdKey.derive(index, false).getPublicKey();
+    	return HdacWalletUtils.bytesToHex(pubkey);
+    }
+    
+    /**
+     * @brief wallet getting hdac public key of wallet
+     * @param isInternal true(internal)/false(external)
+     * @param index derive index
+     * @return pubKey
+     */
+    public String getHdacPrivateKey(boolean isInternal, int index) {
+    	if(hdDKeyChain==null) return null;
+    	HdacDeterministicKey hdKey = isInternal?hdDKeyChain.getHdacInternalKey():hdDKeyChain.getHdacExternalKey();
+		byte[] privkey = hdKey.derive(index, false).getPrivateKey();
+    	return HdacWalletUtils.bytesToHex(privkey);
     }
     
     /**
