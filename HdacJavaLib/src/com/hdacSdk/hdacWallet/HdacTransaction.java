@@ -1,5 +1,7 @@
 package com.hdacSdk.hdacWallet;
 
+import java.io.UnsupportedEncodingException;
+
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.Coin;
@@ -33,14 +35,23 @@ public class HdacTransaction{
     
     private TransactionBuilder mTxBuilder = null;
     
-	private HdacTransaction(NetworkParameters params) {
-		this.mParams = params;
+    public HdacTransaction(NetworkParameters params) {
+		this(params, null);
 	}
 	
 	public HdacTransaction(HdacWallet wallet) {		
+		this(wallet.getNetworkParams(), null);
+	}
+	
+	public HdacTransaction(NetworkParameters params, byte[] payload) {
+		this.mParams = params;
+		mTxBuilder = new TransactionBuilder(payload);
+	}
+	
+	public HdacTransaction(HdacWallet wallet, byte[] payload) {		
 		this(wallet.getNetworkParams());
-		mTxBuilder = new TransactionBuilder();
-	}	
+		mTxBuilder = new TransactionBuilder(payload);
+	}
 	
 	/**
 	 * @brief Creating output of transaction
@@ -138,30 +149,30 @@ public class HdacTransaction{
     		mTxBuilder.getTransaction().addSignedInput(outPoint, utxo.getScript(), sign, Transaction.SigHash.ALL, true);
     	}
     	
-    }
+	}
 	
-        /**
-         * @brief op return output Create and add to transaction
-         * @param data op return string data
-         * @param encode encoding format 
-         */
+    /**
+     * @brief op return output Create and add to transaction
+     * @param data op return string data
+     * @param encode encoding format 
+     */
 	public void addOpReturnOutput(String data, String encode) {
 		if(data!=null&&!data.isEmpty()) {
 			try {
-				long data_satoshi = data.getBytes().length * 1000;
-				Coin fee = Coin.valueOf(data_satoshi);			
+				long data_satoshi = data.getBytes(encode).length * 1000;
+				Coin fee = Coin.valueOf(data_satoshi);	
 				mTxBuilder.getTransaction().addOutput(fee, new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(data.getBytes(encode)).build());
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				e.printStackTrace();				
 			}
 		}
 	}
 	
 	/**
-         * @brief op return output Create and add to transaction
-         * @param data op return byte data
-         */
+     * @brief op return output Create and add to transaction
+     * @param data op return byte data
+     */
 	public void addOpReturnOutput(byte[] data) {
 		if(data!=null&&data.length>0) {
 			long data_satoshi = data.length * 1000;
@@ -209,8 +220,9 @@ public class HdacTransaction{
 		private Transaction mTransaction;
 		private Transaction.Purpose mPurpose = Transaction.Purpose.USER_PAYMENT;
 		
-		public TransactionBuilder() {
-	    	mTransaction = new Transaction(mParams);
+		public TransactionBuilder(byte[] payload) {
+			if(payload!=null) mTransaction = new Transaction(mParams, payload);
+			else mTransaction = new Transaction(mParams);
 		}
 		
 		public Transaction getTransaction() {
