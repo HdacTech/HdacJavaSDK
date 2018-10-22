@@ -1,5 +1,8 @@
 package com.hdacSdk.hdacCoreApi;
 
+import java.text.NumberFormat;
+import java.text.ParsePosition;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,8 +140,8 @@ public class CommandParams {
             	return getParams_Issuemorefrom (params[0], params[1], params[2], params[3], params[4], params[5]);
             case CommandUtils.LIST_ASSETS:
             	return getParams_Listassets (params[0], params[1], params[2], params[3]);
- //           case TransactionDef.GET_ASSET_BALANCES:
- //           	return getParams_Getassetbalances (params[0], params[1], params[2], params[3]);
+            case CommandUtils.GET_ASSET_BALANCES:
+            	return getParams_Getassetbalances (params[0], params[1], params[2], params[3]);
             case CommandUtils.GET_MULTIBALANCES:
             	return getParams_Getmultibalances (params[0], params[1], params[2], params[3], params[4]);
             case CommandUtils.GET_WALLET_TRANSACTION:
@@ -661,7 +664,7 @@ public class CommandParams {
 	//nrequired ["key", ...]//"addmultisigaddress",
 		JSONArray params = new JSONArray();
 		
-		if(nrequired!=null) params.put(nrequired);
+		if(nrequired!=null) params.put(Integer.valueOf(nrequired));
 		if(keys!=null&&!keys.isEmpty()) {			
 			try {
 				JSONArray subParams;
@@ -705,7 +708,7 @@ public class CommandParams {
 	//nrequired ["key", ...]//"createmultisig",
 		JSONArray params = new JSONArray();
 		
-		if(nrequired!=null) params.put(nrequired);
+		if(nrequired!=null) params.put(Integer.valueOf(nrequired));
 		
 		if(keys!=null&&!keys.isEmpty()) {			
 			try {
@@ -794,7 +797,7 @@ public class CommandParams {
         	params.put(items.trim());
         }   
 		if(data_hex!=null) params.put(data_hex);
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(start_block!=null) params.put(Integer.valueOf(start_block));
 		else return params;
@@ -816,7 +819,7 @@ public class CommandParams {
         	String items = permissions.replace(" ", "");
         	params.put(items.trim());
         }   
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(comment!=null) params.put(comment);
 		else return params;
@@ -834,10 +837,10 @@ public class CommandParams {
         	String items = name.replace(" ", "");
         	params.put(items.trim());
         }   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(units!=null) params.put(Integer.valueOf(units));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(units!=null) params.put(Double.valueOf(units));
 		else return params;
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(custom_field!=null&&!custom_field.isEmpty()) {			
 			try {
@@ -866,10 +869,10 @@ public class CommandParams {
         	String items = name.replace(" ", "");
         	params.put(items.trim());
         }   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(units!=null) params.put(Integer.valueOf(units));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(units!=null) params.put(Double.valueOf(units));
 		else return params;
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(custom_field!=null&&!custom_field.isEmpty()) {			
 			try {
@@ -894,8 +897,8 @@ public class CommandParams {
 		if(address!=null) params.put(address);
 		
 		if(asset!=null) params.put(asset);   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(custom_field!=null&&!custom_field.isEmpty()) {			
 			try {
@@ -920,8 +923,8 @@ public class CommandParams {
 		if(from_address!=null) params.put(from_address);
 		if(to_address!=null) params.put(to_address);
 		if(asset!=null) params.put(asset);   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(custom_field!=null&&!custom_field.isEmpty()) {			
 			try {
@@ -959,12 +962,28 @@ public class CommandParams {
 		return params;
 	}
 	
-//	private JSONArray getParams_Getassetbalances (
-//    		String account, String minconf, String includeWatchOnly, String includeLocked) {
-//	//(account=&quot;&quot;) (minconf=1) (includeWatchOnly=false) (includeLocked=false)//"getassetbalances",
-//		JSONArray params = new JSONArray();
-//		return params;
-//	}
+	private JSONArray getParams_Getassetbalances (
+    		String account, String minconf, String includeWatchOnly, String includeLocked) {
+	//(account=&quot;&quot;) (minconf=1) (includeWatchOnly=false) (includeLocked=false)//"getassetbalances",
+		JSONArray params = new JSONArray();
+		boolean iw = false;
+		boolean il = false;
+		
+		if(includeWatchOnly!=null&&!includeWatchOnly.isEmpty())
+        	iw = includeWatchOnly.equals("true")?true:false;
+		if(includeLocked!=null&&!includeLocked.isEmpty())
+        	il = includeLocked.equals("true")?true:false;
+		
+		if(account!=null) params.put(account);
+		else return params;
+		if(minconf!=null) params.put(Integer.valueOf(minconf));
+		else return params;
+		if(includeWatchOnly!=null) params.put(iw);
+		else return params;
+		if(includeLocked!=null) params.put(il);
+		
+		return params;
+	}
 	
 	private JSONArray getParams_Getmultibalances (
     		String addresses, String assets, String minconf, String includeWatchOnly, String includeLocked) {
@@ -1025,7 +1044,7 @@ public class CommandParams {
 		JSONArray params = new JSONArray();
 		
 		if(address!=null) params.put(address);
-		if(amount!=null) params.put(Integer.valueOf(amount));
+		if(amount!=null) params.put(Double.valueOf(amount));
 		if(comment!=null) params.put(comment);
 		else return params;
 		if(comment_to!=null) params.put(comment_to);
@@ -1040,8 +1059,8 @@ public class CommandParams {
 		
 		if(address!=null) params.put(address);
 		if(asset!=null) params.put(asset);   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(comment!=null) params.put(comment);
 		else return params;
@@ -1058,8 +1077,8 @@ public class CommandParams {
 		if(from_address!=null) params.put(from_address);
 		if(to_address!=null) params.put(to_address);
 		if(asset!=null) params.put(asset);   
-		if(qty!=null) params.put(Integer.valueOf(qty));
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(qty!=null) params.put(Double.valueOf(qty));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
 		if(comment!=null) params.put(comment);
 		else return params;
@@ -1595,7 +1614,7 @@ public class CommandParams {
 		
 		if(tx_hex!=null) params.put(tx_hex);
 		if(address!=null) params.put(address);
-		if(native_fee!=null) params.put(Integer.valueOf(native_fee));
+		if(native_fee!=null) params.put(Double.valueOf(native_fee));
 		
 		return params;
 	}
@@ -1876,9 +1895,9 @@ public class CommandParams {
 	//txid (verbose=0)//"getrawtransaction",                          
 		JSONArray params = new JSONArray();
 		
-		boolean vb = false;
+		int vb = 0;
 		if(verbose!=null&&!verbose.isEmpty())
-			vb = verbose.equals("true")?true:false;
+			vb = Integer.valueOf(verbose);
 		
 		if(txid!=null) params.put(txid);
 		if(verbose!=null) params.put(vb);
@@ -2102,11 +2121,19 @@ public class CommandParams {
 		JSONArray params = new JSONArray();
 		
 		if(hash!=null) {
-			if(hash.length()>=32) params.put(hash);//hash
+			if(!isNumeric(hash) && hash.length()>=32) params.put(hash);//hash
 			else params.put(Integer.valueOf(hash));//height
 		}
 		
 		return params;
+	}
+	
+	private static boolean isNumeric(String str)
+	{
+	  NumberFormat formatter = NumberFormat.getInstance();
+	  ParsePosition pos = new ParsePosition(0);
+	  formatter.parse(str, pos);
+	  return str.length() == pos.getIndex();
 	}
 	
 }
