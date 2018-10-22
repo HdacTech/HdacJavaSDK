@@ -301,50 +301,87 @@ public class HdacRpcClient {
 
             client.setConnectionTimeout(mTimeout);
             client.setSoTimeout(mTimeout);
+            
+            JSONObject rst = null;
             try {
-            	System.out.print( CommandUtils.getMethodName(mMethod).trim() + "\n" );
-            	System.out.print( mArgvs.toString() + "\n" );
-            	mResult = client.callJSONObject(CommandUtils.getMethodName(mMethod).trim(), mChainName, mArgvs);
-            	return mResult;
+            	rst = client.callJSONObject(CommandUtils.getMethodName(mMethod).trim(), mChainName, mArgvs);
             } catch (JSONRPCException rpcEx) {
                 rpcEx.printStackTrace();
                 mErrMsg = rpcEx.getMessage();
             } catch (HdacException e) {
 				e.printStackTrace();
-			}
-            return null;
+			} finally{
+				done(rst);	
+			}            
+            return rst;
         }
         
-		@Override
-		protected void done() {
+        private void done(JSONObject rst) {
 			// TODO Auto-generated method stub
-			
-			if (mResult != null) {
+        	mResult = rst;
+        	if (mResult != null) {
                 try {
                 	if(mErrMsg!=null&&!mErrMsg.isEmpty()) {
-						mHandler.onError(mMethod, mErrMsg, HdacRpcClient.RESPONSE_RESULT_ERROR);
-						mHandler.onResponse(mMethod, null);
+						if(mErrMsg.equals("Success")) {
+							mHandler.onResponse(mMethod, mResult);
+						}
+						else {
+							mHandler.onError(mMethod, mErrMsg, HdacRpcClient.RESPONSE_RESULT_ERROR);
+						}
+						System.out.print("MakeJSONRPCTask 0 " + mResult.toString() + "\n");
                 	}
-                	else if(mResult.get("error")==null) {
-						mHandler.onError(mMethod, "Success", HdacRpcClient.RESPONSE_OK);
+                	else if(mResult.isNull("error")) {
+            			//mHandler.onError(mMethod, "Success", HdacRpcClient.RESPONSE_OK);
 						mHandler.onResponse(mMethod, mResult);
                 	}else {
-						mHandler.onError(mMethod, mResult.get("error").toString(), HdacRpcClient.RESPONSE_RESULT_ERROR);
-						mHandler.onResponse(mMethod, mResult);
+            			mHandler.onError(mMethod, mResult.get("error").toString(), HdacRpcClient.RESPONSE_RESULT_ERROR);
+						//mHandler.onResponse(mMethod, mResult);
                 	}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}               
+					e.printStackTrace();					
+				} finally {
+					mHandler.done(mMethod);
+				}
                 
             } else {
             	mHandler.onError(mMethod, mErrMsg, HdacRpcClient.RESPONSE_NULL);
-            	mHandler.onResponse(mMethod, null);                
-            }
+            	//mHandler.onResponse(mMethod, null); 
+            	mHandler.done(mMethod);
+            }			
 			
-			mHandler.done(mMethod);
-			super.done();
-		}        
+		}  
+        
+//		@Override
+//		protected void done() {
+			// TODO Auto-generated method stub
+//			System.out.print( "done" + "\n" );
+//			if (mResult != null) {
+//                try {
+//                	if(mErrMsg!=null&&!mErrMsg.isEmpty()) {
+//						mHandler.onError(mMethod, mErrMsg, HdacRpcClient.RESPONSE_RESULT_ERROR);
+//						mHandler.onResponse(mMethod, null);
+//                	}
+//                	else if(mResult.get("error")==null) {
+//						mHandler.onError(mMethod, "Success", HdacRpcClient.RESPONSE_OK);
+//						mHandler.onResponse(mMethod, mResult);
+//                	}else {
+//						mHandler.onError(mMethod, mResult.get("error").toString(), HdacRpcClient.RESPONSE_RESULT_ERROR);
+//						mHandler.onResponse(mMethod, mResult);
+//                	}
+//				} catch (JSONException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}               
+//                
+//            } else {
+//            	mHandler.onError(mMethod, mErrMsg, HdacRpcClient.RESPONSE_NULL);
+//            	mHandler.onResponse(mMethod, null);                
+//            }
+//			
+//			mHandler.done(mMethod);
+//			super.done();
+//		}        
         
     }	
 
