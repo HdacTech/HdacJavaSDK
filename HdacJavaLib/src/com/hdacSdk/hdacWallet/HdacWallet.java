@@ -184,6 +184,42 @@ public class HdacWallet {
 		byte[] pubkey = hdKey.derive(0, false).getPublicKey();
     	return convPubkeyToHdacAddress(pubkey);
     }
+	
+    /**
+     * @brief Generate Hdac public key in hex string form of wallet
+     * @return String Hdac pubkey
+     */
+    public String getHdacPublicKey() {
+    	if(hdDKeyChain==null) return null;
+    	HdacDeterministicKey hdKey = hdDKeyChain.getHdacExternalKey();
+		byte[] pubkey = hdKey.derive(0, false).getPublicKey();
+    	return HdacWalletUtils.bytesToHex(pubkey);
+    }
+    
+    /**
+     * @brief Generate Hdac private key in hex string form of wallet
+     * @return String Hdac privkey
+     */
+    public String getHdacPrivateKey() {
+    	if(hdDKeyChain==null) return null;
+    	HdacDeterministicKey hdKey = hdDKeyChain.getHdacExternalKey();
+		byte[] privkey = hdKey.derive(0, false).getPrivateKey();
+		return HdacWalletUtils.bytesToHex(privkey);
+    }
+    
+    /**
+     * @brief Generate Hdac private key in hex string form of wallet
+     * @return String Hdac private
+     */
+    public String getHdacBase58PrivateKey() {
+    	if(hdDKeyChain==null) return null;
+    	HdacDeterministicKey hdKey = hdDKeyChain.getHdacExternalKey();
+		byte[] privkey = hdKey.derive(0, false).getPrivateKey();
+		//DumpedPrivateKey dumpedPrivateKey = DumpedPrivateKey.fromBase58(hdNetParams, encodeBase58WIF(privkey));
+		//System.out.print("dumpedPrivateKey : " + dumpedPrivateKey.toBase58() + "\n");
+    	return encodeBase58WIF(privkey);
+    }   
+    
     
     /**
      * @brief wallet의 HdacDeterministicKeyChain 조회
