@@ -3,6 +3,7 @@ package com.hdacSdk.hdacCoreApi;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -306,7 +307,7 @@ public class CommandParams {
 
         JSONArray params = new JSONArray();
         if(address!=null) params.put(address);
-        if(minconf!=null) params.put(Integer.valueOf(minconf));
+        if(minconf!=null) params.put(Long.valueOf(minconf));
         if(includeLocked!=null) params.put(locked);
         return params;
     }
@@ -332,8 +333,8 @@ public class CommandParams {
 
         JSONArray params = new JSONArray();
         if(address!=null) params.put(address);
-        if(count!=null) params.put(Integer.valueOf(count));
-        if(skip!=null) params.put(Integer.valueOf(skip));
+        if(count!=null) params.put(Long.valueOf(count));
+        if(skip!=null) params.put(Long.valueOf(skip));
         if(verbose!=null) params.put(vb);
         return params;
     }
@@ -350,8 +351,8 @@ public class CommandParams {
             vb = verbose.equals("true")?true:false;
 
         JSONArray params = new JSONArray();
-        if(count!=null) params.put(Integer.valueOf(count));
-        if(skip!=null) params.put(Integer.valueOf(skip));
+        if(count!=null) params.put(Long.valueOf(count));
+        if(skip!=null) params.put(Long.valueOf(skip));
         if(includeWatchOnly!=null) params.put(wo);
         else return params;
         if(verbose!=null) params.put(vb);
@@ -419,9 +420,9 @@ public class CommandParams {
         else return params;
         if(verbose!=null) params.put(vb);
         else return params;
-        if(count!=null) params.put(Integer.valueOf(count));
+        if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
 
@@ -494,25 +495,25 @@ public class CommandParams {
         else return params;
         if(verbose!=null) params.put(vb);
         else return params;
-        if(count!=null) params.put(Integer.valueOf(count));
+        if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
 
         return params;
     }
     
     private JSONArray getParams_Getblock(String hash, String verbose) {
-    	// hash|height (verbose=1)
-    	boolean vb = false;
-        if(verbose!=null&&!verbose.isEmpty())
-            vb = verbose.equals("true")?true:false;
-        
+    	// hash|height (verbose=1)    	
         JSONArray params = new JSONArray();
         if(hash!=null) {
 			if(hash.length()>=32) params.put(hash);//hash
 			else params.put(hash);//height
 		}
-        if(verbose!=null) params.put(vb);
+        if(verbose!=null) {
+        	if(verbose.equals("true")) params.put(true);
+        	else if(verbose.equals("false")) params.put(false);
+        	else if(NumberUtils.isNumber(verbose)) params.put(Integer.parseInt(verbose));
+        }
         
         return params;    	
     }
@@ -529,11 +530,11 @@ public class CommandParams {
         	String items = permissions.replace(" ", "");
         	params.put(items);
         }       
-        if(nativeAmount!=null) params.put(Integer.valueOf(nativeAmount));
+        if(nativeAmount!=null) params.put(Double.valueOf(nativeAmount));
         else return params;
-        if(startBlock!=null) params.put(Integer.valueOf(startBlock));
+        if(startBlock!=null) params.put(Long.valueOf(startBlock));
         else return params;
-        if(endBlock!=null) params.put(Integer.valueOf(endBlock));
+        if(endBlock!=null) params.put(Long.valueOf(endBlock));
         else return params;
         if(comment!=null) params.put(comment);
         else return params;
@@ -555,7 +556,7 @@ public class CommandParams {
         	String items = permissions.replace(" ", "");
         	params.put(items);
         }       
-        if(nativeAmount!=null) params.put(Integer.valueOf(nativeAmount));
+        if(nativeAmount!=null) params.put(Double.valueOf(nativeAmount));
         else return params;        
         if(comment!=null) params.put(comment);
         else return params;
@@ -577,7 +578,7 @@ public class CommandParams {
             il = includeLocked.equals("true")?true:false;
 		
 		JSONArray params = new JSONArray();
-		if(minconf!=null) params.put(Integer.valueOf(minconf));
+		if(minconf!=null) params.put(Long.valueOf(minconf));
         else return params;
 		if(includeWatchOnly!=null) params.put(iw);
         else return params;
@@ -591,9 +592,9 @@ public class CommandParams {
 		//"(minconf=1)", "(maxconf=999999)", "([\"address\", ...])"
 		JSONArray params = new JSONArray();
 		
-		if(minconf!=null) params.put(Integer.valueOf(minconf));
+		if(minconf!=null) params.put(Long.valueOf(minconf));
         else return params;
-		if(maxconf!=null) params.put(Integer.valueOf(maxconf));
+		if(maxconf!=null) params.put(Long.valueOf(maxconf));
         else return params;
 		if(addresses!=null&&!addresses.isEmpty()) {
 			try {
@@ -664,7 +665,7 @@ public class CommandParams {
 	//nrequired ["key", ...]//"addmultisigaddress",
 		JSONArray params = new JSONArray();
 		
-		if(nrequired!=null) params.put(Integer.valueOf(nrequired));
+		if(nrequired!=null) params.put(Long.valueOf(nrequired));
 		if(keys!=null&&!keys.isEmpty()) {			
 			try {
 				JSONArray subParams;
@@ -699,7 +700,7 @@ public class CommandParams {
 	//(count=1)//"createkeypairs",
 		JSONArray params = new JSONArray();
 		
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
 		return params;
 	}
 	
@@ -708,7 +709,7 @@ public class CommandParams {
 	//nrequired ["key", ...]//"createmultisig",
 		JSONArray params = new JSONArray();
 		
-		if(nrequired!=null) params.put(Integer.valueOf(nrequired));
+		if(nrequired!=null) params.put(Long.valueOf(nrequired));
 		
 		if(keys!=null&&!keys.isEmpty()) {			
 			try {
@@ -745,11 +746,11 @@ public class CommandParams {
         	String items = permissions.replace(" ", "");
         	params.put(items);
         }     
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
-		if(start_block!=null) params.put(Integer.valueOf(start_block));
+		if(start_block!=null) params.put(Long.valueOf(start_block));
 		else return params;
-		if(end_block!=null) params.put(Integer.valueOf(end_block));
+		if(end_block!=null) params.put(Long.valueOf(end_block));
 		else return params;
 		if(comment!=null) params.put(comment);
 		else return params;
@@ -773,11 +774,11 @@ public class CommandParams {
         	params.put(items.trim());
         }     
 		if(data_hex!=null) params.put(data_hex);
-		if(native_amount!=null) params.put(Integer.valueOf(native_amount));
+		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
-		if(start_block!=null) params.put(Integer.valueOf(start_block));
+		if(start_block!=null) params.put(Long.valueOf(start_block));
 		else return params;
-		if(end_block!=null) params.put(Integer.valueOf(end_block));
+		if(end_block!=null) params.put(Long.valueOf(end_block));
 		
 		return params;
 	}
@@ -799,9 +800,9 @@ public class CommandParams {
 		if(data_hex!=null) params.put(data_hex);
 		if(native_amount!=null) params.put(Double.valueOf(native_amount));
 		else return params;
-		if(start_block!=null) params.put(Integer.valueOf(start_block));
+		if(start_block!=null) params.put(Long.valueOf(start_block));
 		else return params;
-		if(end_block!=null) params.put(Integer.valueOf(end_block));
+		if(end_block!=null) params.put(Long.valueOf(end_block));
 		return params;
 	}
 	
@@ -955,9 +956,9 @@ public class CommandParams {
 		else return params;
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
 		else return params;
-		if(start!=null) params.put(Integer.valueOf(start));
+		if(start!=null) params.put(Long.valueOf(start));
 		
 		return params;
 	}
@@ -976,7 +977,7 @@ public class CommandParams {
 		
 		if(account!=null) params.put(account);
 		else return params;
-		if(minconf!=null) params.put(Integer.valueOf(minconf));
+		if(minconf!=null) params.put(Long.valueOf(minconf));
 		else return params;
 		if(includeWatchOnly!=null) params.put(iw);
 		else return params;
@@ -1007,7 +1008,7 @@ public class CommandParams {
         	params.put(items.trim());			
 		}
 		else return params;
-		if(minconf!=null) params.put(Integer.valueOf(minconf));
+		if(minconf!=null) params.put(Long.valueOf(minconf));
 		else return params;
 		if(includeWatchOnly!=null) params.put(iw);
 		else return params;
@@ -1292,9 +1293,9 @@ public class CommandParams {
 		else return params;
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
 		else return params;
-		if(start!=null) params.put(Integer.valueOf(start));
+		if(start!=null) params.put(Long.valueOf(start));
 		
 		return params;
 	}
@@ -1387,9 +1388,9 @@ public class CommandParams {
 		if(asset!=null) params.put(asset);		
         if(verbose!=null) params.put(vb);
         else return params;
-        if(count!=null) params.put(Integer.valueOf(count));
+        if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
         
@@ -1436,12 +1437,12 @@ public class CommandParams {
 			vb = verbose.equals("true")?true:false;
 		
 		if(stream!=null) params.put(stream);
-		if(blocks!=null) params.put(Integer.valueOf(blocks));
+		if(blocks!=null) params.put(Long.valueOf(blocks));
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
 		
 		return params;
 	}
@@ -1463,9 +1464,9 @@ public class CommandParams {
 		if(key!=null) params.put(key);
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
         
@@ -1493,9 +1494,9 @@ public class CommandParams {
 		else return params;
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
         
@@ -1518,9 +1519,9 @@ public class CommandParams {
 		if(stream!=null) params.put(stream);
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
         
@@ -1544,9 +1545,9 @@ public class CommandParams {
 		if(address!=null) params.put(address);
 		if(verbose!=null) params.put(vb);
 		else return params;
-		if(count!=null) params.put(Integer.valueOf(count));
+		if(count!=null) params.put(Long.valueOf(count));
         else return params;
-        if(start!=null) params.put(Integer.valueOf(start));
+        if(start!=null) params.put(Long.valueOf(start));
         else return params;
         if(local_ordering!=null) params.put(lo);
         
@@ -1563,7 +1564,7 @@ public class CommandParams {
         	params.put(items.trim());			
 		}
 		else return params;
-		if(maxconf!=null) params.put(Integer.valueOf(maxconf));
+		if(maxconf!=null) params.put(Long.valueOf(maxconf));
         else return params;
 		if(maxcombines!=null) params.put(Integer.valueOf(maxcombines));
         else return params;
@@ -1873,7 +1874,7 @@ public class CommandParams {
 	//height//"getblockhash",                               
 		JSONArray params = new JSONArray();
 		
-		if(height!=null) params.put(Integer.valueOf(height));
+		if(height!=null) params.put(Long.valueOf(height));
 		
 		return params;
 	}
@@ -2122,7 +2123,7 @@ public class CommandParams {
 		
 		if(hash!=null) {
 			if(!isNumeric(hash) && hash.length()>=32) params.put(hash);//hash
-			else params.put(Integer.valueOf(hash));//height
+			else params.put(Long.valueOf(hash));//height
 		}
 		
 		return params;
