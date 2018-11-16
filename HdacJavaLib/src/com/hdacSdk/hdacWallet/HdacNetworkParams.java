@@ -21,14 +21,18 @@ import org.bitcoinj.utils.MonetaryFormat;
  */
 public class HdacNetworkParams extends NetworkParameters {
 	
-	public String addressChecksumValue;	
+	public String strAddressHeader; // pubkeyhash string
+	public String strP2shHeader;    // scripthash string
+	public String addressChecksumValue;		
+	
 	protected long time;
 	
 	public HdacNetworkParams(HdacCoreAddrParams coreParams) {
         super();
-        
-        addressHeader = coreParams.getAddressHeader();           // pubkeyhash
-        p2shHeader = coreParams.getP2shHeader();               // scripthash        
+        strAddressHeader = coreParams.getAddressHeader();
+        strP2shHeader = coreParams.getP2shHeader();
+        addressHeader = Integer.parseInt(strAddressHeader);           // pubkeyhash int
+        p2shHeader = Integer.parseInt(strP2shHeader);               // scripthash int  
         addressChecksumValue = coreParams.getAddressChecksumValue();
         
         interval = INTERVAL;
@@ -79,7 +83,15 @@ public class HdacNetworkParams extends NetworkParameters {
     	return new HdacNetworkParams(new HdacCoreAddrParams(true));
     }
     
-    public String getAddressChecksumValue() {
+    public String getHdacAddressHeader() {
+    	return strAddressHeader;
+    }
+    
+    public String getHdacP2shHeader() {
+    	return strP2shHeader;
+    }
+    
+    public String getHdacAddressChecksumValue() {
     	return addressChecksumValue;
     }
     
@@ -145,3 +157,4 @@ public class HdacNetworkParams extends NetworkParameters {
     
 
 }
+
