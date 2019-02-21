@@ -1,10 +1,18 @@
 package com.hdacSdk.hdacWallet;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.SecureRandom;
 import java.util.List;
 
+import org.bitcoinj.core.Utils;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.crypto.MnemonicException.MnemonicLengthException;
+import org.spongycastle.crypto.digests.RIPEMD160Digest;
+import org.spongycastle.crypto.digests.SHA256Digest;
+
+import com.google.protobuf.ByteString;
 
 /**
  * @brief Mnemonic Seed Word creation utilities for wallet creation
@@ -121,4 +129,92 @@ public class HdacWalletUtils {
 		return sb.toString(); 
 	} 
 
+	public static byte[] toByteArray(String str)
+	{
+		byte[] bytes = new byte[str.length() / 2];
+		for (int i = 0; i < bytes.length; i++)
+		{
+			bytes[i] = (byte)Integer.parseInt(str.substring(i * 2, i * 2 + 2), 16);
+		}
+		return bytes;
+	}
+	
+	public static String reverseHexString(String hexStr)
+	{
+	    StringBuilder result = new StringBuilder();
+	    for (int i = 0; i <=hexStr.length()-2; i=i+2)
+	    {
+	        result.append(new StringBuilder(hexStr.substring(i,i+2)).reverse());
+	    }
+	    return result.reverse().toString();
+	}
+
+	public static String toLittleEndian(long value)
+	{
+		byte[] a = getLittleEndian(value);
+
+		StringBuilder sb = new StringBuilder(a.length * 2);
+		for (byte b : a)
+			sb.append(String.format("%02x", b));
+		return sb.toString();
+	}
+	
+	private static byte[] getLittleEndian(long v)
+	{
+		byte[] buf = new byte[8];
+		buf[0] = (byte)((v >>> 000) & 0xFF);
+		buf[1] = (byte)((v >>> 010) & 0xFF);
+		buf[2] = (byte)((v >>> 020) & 0xFF);
+		buf[3] = (byte)((v >>> 030) & 0xFF);
+		buf[4] = (byte)((v >>> 040) & 0xFF);
+		buf[5] = (byte)((v >>> 050) & 0xFF);
+		buf[6] = (byte)((v >>> 060) & 0xFF);
+		buf[7] = (byte)((v >>> 070) & 0xFF);
+		return buf;
+	}
+	
+    private static byte[] ripemd160(byte[] buf) {    	
+    	byte byteData[] = null;
+    	RIPEMD160Digest digest = new RIPEMD160Digest();
+    	digest.update(buf, 0, buf.length);
+		byteData = new byte[digest.getDigestSize()];
+		digest.doFinal(byteData, 0);
+    	
+		return byteData;    	
+    }
+    
+    private static byte[] sha256(byte[] buf) {    	
+    	SHA256Digest digest = new SHA256Digest();
+        byte[] byteData = new byte[digest.getDigestSize()];
+        digest.update(buf, 0, buf.length);
+        digest.doFinal(byteData, 0);    	
+
+		return byteData;    	
+    }
+	
+    public static ByteString wbytesToHex(byte[] bytes) {
+        return ByteString.copyFrom(Utils.HEX.encode(bytes).getBytes());
+    }
+    
+    
+    public static byte[] intToByte(int integer, ByteOrder order) {
+    	
+		ByteBuffer buff = ByteBuffer.allocate(Integer.SIZE/8);
+		buff.order(order);
+ 		buff.putInt(integer);
+ 		System.out.println("intTobyte : " + buff);
+		return buff.array();
+	}
+    
+    public static byte[] hexToByte(String hex) {    	
+        return new BigInteger(hex,16).toByteArray();
+	}
+    
+    public static byte calculateChecksum(byte[] initialEntropy) {
+        int ent = initialEntropy.length * 8;
+        byte mask = (byte) (0xff << 8 - ent / 32);
+        byte[] bytes = sha256(initialEntropy);
+
+        return (byte) (bytes[0] & mask);
+    }	
 }

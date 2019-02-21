@@ -372,7 +372,7 @@ public class CommandParams {
         if(to_address!=null) params.put(to_address);
         if(amount!=null) params.put(am);
         if(comment!=null) params.put(comment);
-        else return params;
+
         if(comment_to!=null) params.put(comment_to);
         return params;
     }

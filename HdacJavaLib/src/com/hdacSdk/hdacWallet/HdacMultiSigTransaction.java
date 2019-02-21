@@ -1,22 +1,7 @@
 package com.hdacSdk.hdacWallet;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import javax.annotation.Nullable;
 
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.ECKey.ECDSASignature;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.crypto.TransactionSignature;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptBuilder;
-import org.bitcoinj.script.ScriptChunk;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,7 +12,6 @@ import com.hdacSdk.hdacCoreApi.HdacCommand;
 import com.hdacSdk.hdacCoreApi.HdacException;
 import com.hdacSdk.hdacCoreApi.HdacRpcClient;
 import com.hdacSdk.hdacCoreApi.RpcHandler;
-import com.sun.jna.Library.Handler;
 
 /**
  * @brief API support for MultiSigniture Transaction data configuration
